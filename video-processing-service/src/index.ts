@@ -1,6 +1,28 @@
 import express from "express";
 import { setupDirectories, downloadRawVideo, uploadProcessedVideo, convertVideo, deleteRawVideo, deleteProcessedVideo } from "./storage";
 
+import { GoogleAuth } from 'google-auth-library';
+async function printActiveIdentity() {
+    const auth = new GoogleAuth();
+    const client = await auth.getClient();
+    const projectId = await auth.getProjectId();
+    
+    // Try to get the service account email from the client
+    let email = 'UNKNOWN';
+    try {
+        // For service accounts, we can access the email through the client's credentials
+        if ('credentials' in client && client.credentials && 'client_email' in client.credentials) {
+            email = (client.credentials as any).client_email;
+        }
+    } catch (error) {
+        console.log('Could not determine service account email');
+    }
+    
+    console.log('▶️ Authenticated as:', email);
+    console.log('▶️ Project ID:', projectId);
+  }
+  printActiveIdentity();
+
 // Set the path to ffmpeg binary explicitly for WSL environment
 // ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
 setupDirectories();

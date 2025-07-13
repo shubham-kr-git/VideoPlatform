@@ -4,8 +4,8 @@ import ffmpeg from "fluent-ffmpeg";
 
 const storage = new Storage();
 
-const rawVideoBucketName = "video-processing-service-raw-videos";
-const processedVideoBucketName = "video-processing-service-processed-videos";
+const rawVideoBucketName = "video-process-service-raw-videos";
+const processedVideoBucketName = "video-process-service-processed-videos";
 
 const localRawVideoPath = "./raw-videos";
 const localProcessedVideoPath = "./processed-videos";
