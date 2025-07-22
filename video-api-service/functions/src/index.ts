@@ -1,19 +1,46 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-import {onRequest} from "firebase-functions/v2/https";
+import * as functions from "firebase-functions/v1";
+import {initializeApp} from "firebase-admin/app";
+import {Firestore} from "firebase-admin/firestore";
 import * as logger from "firebase-functions/logger";
+import {getStorage} from "firebase-admin/storage";
+import {onCall} from "firebase-functions/v2/https";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+initializeApp();
+const firestore = new Firestore();
+const storage = getStorage();
 
-export const helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
+const rawVideoBucketName = "video-process-service-raw-videos";
+
+export const createUser = functions.auth.user().onCreate((user) => {
+  const userInfo = {
+    uid: user.uid,
+    email: user.email,
+    photoURL: user.photoURL,
+  };
+
+  firestore.collection("users").doc(user.uid).set(userInfo);
+  logger.info(`User Created: ${JSON.stringify(userInfo)}`);
+});
+
+export const generateUploadUrl = onCall({maxInstances: 1}, async (request) => {
+  const auth = request.auth;
+  if (!auth) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "The function must be called while authenticated."
+    );
+  }
+
+  const data = request.data;
+  const bucket = storage.bucket(rawVideoBucketName);
+
+  const fileName = `${auth.uid}-${Date.now()}.${data.fileExtension}`;
+
+  const [url] = await bucket.file(fileName).getSignedUrl({
+    version: "v4",
+    action: "write",
+    expires: Date.now() + 15 * 60 * 1000,
+  });
+
+  return {url, fileName};
 });
