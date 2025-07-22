@@ -17,11 +17,8 @@ export default function Navbar(){
             setUser(user);
         });
         return () => unsubscribe();
-    });
+    }, []);
 
-    if(!user){
-        return null;
-    }
     return (
         <nav className={styles.nav}>
             <Link href="/">

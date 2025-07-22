@@ -8,11 +8,11 @@ import { User } from "firebase/auth";
 interface SignInProps{
     user: User | null;
 }
-export default function SignIn(props: SignInProps){
+export default function SignIn({user}: SignInProps){
     return (
         <Fragment>
             {
-                props.user ? (
+                user ? (
                 <button className={styles.signin} onClick={signOut}>
                     Sign Out
                 </button>
